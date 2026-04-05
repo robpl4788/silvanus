@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:robot_log/src/rust/api/simple.dart';
+import 'package:silvanus/src/rust/api/simple.dart';
 
 class SimpleLineChart extends StatefulWidget {
   const SimpleLineChart({super.key});

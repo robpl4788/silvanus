@@ -1,17 +1,21 @@
-# robot_log
+# Silvanus
 
-A new Flutter project.
+A logging and analysis platform designed for lightweight robots and embedded systems.
 
-## Getting Started
+Flutter front end
+Rust back end
 
-This project is a starting point for a Flutter application.
+## Aims to:
 
-A few resources to get you started if this is your first Flutter project:
+### Read:
+ - CSV
+ - Serial Printouts
+ - Custom log files
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Plot
+ - Line
+ - Statistics
+ - 2d and 3d poses in custom environments
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+ ## Name:
+ Silvanus is roman god of forests, logging happens in forests.

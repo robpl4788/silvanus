@@ -1,5 +1,5 @@
 [package]
-name = "rust_lib_robot_log"
+name = "rust_lib_silvanus"
 version = "0.1.0"
 edition = "2021"
 

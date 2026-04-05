@@ -1,6 +1,6 @@
 {
-    "name": "robot_log",
-    "short_name": "robot_log",
+    "name": "silvanus",
+    "short_name": "silvanus",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

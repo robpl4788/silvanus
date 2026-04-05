@@ -130,8 +130,8 @@ import 'widgets/simple_line_chart.dart';
 // 
 
 import 'package:flutter/material.dart';
-import 'package:robot_log/src/rust/api/simple.dart';
-import 'package:robot_log/src/rust/frb_generated.dart';
+import 'package:silvanus/src/rust/api/simple.dart';
+import 'package:silvanus/src/rust/frb_generated.dart';
 
 Future<void> main() async {
   await RustLib.init();

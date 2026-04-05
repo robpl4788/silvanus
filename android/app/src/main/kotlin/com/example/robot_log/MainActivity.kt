@@ -1,4 +1,4 @@
-package com.example.robot_log
+package com.example.silvanus
 
 import io.flutter.embedding.android.FlutterActivity
 
