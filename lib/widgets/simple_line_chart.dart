@@ -1,31 +1,51 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:robot_log/src/rust/api/simple.dart';
 
-class SimpleLineChart extends StatelessWidget {
+class SimpleLineChart extends StatefulWidget {
   const SimpleLineChart({super.key});
 
   @override
+  State<SimpleLineChart> createState() => _LiveChartState();
+}
+
+class _LiveChartState extends State<SimpleLineChart> {
+  List<FlSpot> spots = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Listen to Rust stream
+    getTestData().listen((pointsFromRust) {
+      setState(() {
+        // Replace the entire dataset
+        spots = pointsFromRust
+            .map((p) => FlSpot(p.x, p.y))
+            .toList();
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (spots.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return LineChart(
       LineChartData(
-        minX: 0,
-        maxX: 4,
-        minY: 0,
-        maxY: 6,
         lineBarsData: [
           LineChartBarData(
+            spots: spots,
             isCurved: false,
             color: Colors.blue,
             barWidth: 2,
-            spots: const [
-              FlSpot(0, 1),
-              FlSpot(1, 3),
-              FlSpot(2, 2),
-              FlSpot(3, 5),
-              FlSpot(4, 3),
-            ],
+            dotData: FlDotData(show: false),
           ),
         ],
+        minY: 0,
+        maxY: 1,
       ),
     );
   }

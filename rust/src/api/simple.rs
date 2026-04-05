@@ -1,3 +1,9 @@
+use std::collections::btree_map::Range;
+use rand::{self, RngExt};
+
+use crate::frb_generated;
+
+
 #[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
 pub fn greet(name: String) -> String {
     format!("Hello, {name}!")
@@ -10,16 +16,25 @@ pub fn init_app() {
 }
 
 pub struct Point {
-    pub t: f64,
-    pub v: f64,
+    pub x: f64,
+    pub y: f64,
 }
 
-pub fn get_test_data() -> Vec<Point> {
-    vec![
-        Point { t: 0.0, v: 1.0 },
-        Point { t: 1.0, v: 3.0 },
-        Point { t: 2.0, v: 2.0 },
-        Point { t: 3.0, v: 5.0 },
-        Point { t: 4.0, v: 3.0 },
-    ]
+pub fn get_test_data(sink: frb_generated::StreamSink<Vec<Point>>){
+    let mut rng = rand::rng();
+
+    loop {
+        let mut out: Vec<Point> = vec![];
+
+        for x in 1..5 {
+            out.push(Point{x: x as f64, y: rng.random()});
+        }
+
+        sink.add(out);
+
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
+    
+
+
 }
