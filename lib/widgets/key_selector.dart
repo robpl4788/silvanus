@@ -20,7 +20,6 @@ class KeySelectorState extends State<KeySelector> {
   @override
   void initState() {
     super.initState();
-    Engine.engine.api.loadTest();
 
     Engine.engine.api.getAvailableKeys().listen((keys){
       setState(() {

@@ -10,6 +10,8 @@ use crate::parser::test_data_generator::{add_test_data};
 
 use std::thread;
 use std::sync::{Arc, RwLock};
+use std::time::Duration;
+use tokio::time::timeout;
 
 
 #[flutter_rust_bridge::frb(opaque)]
@@ -55,8 +57,12 @@ impl Api {
         let mut update_reciever = engine.read().unwrap().get_key_updates_reciever();
         available_keys_sink.add(engine.read().unwrap().get_keys());
         while engine.read().unwrap().in_use(){
-            update_reciever.changed().await;
-            available_keys_sink.add(engine.read().unwrap().get_keys());
+
+            // If doesn't time out update the sunk keys, otherwise stop to check if the engine this is referencing is still in use
+            if let Ok(_) =  timeout(Duration::from_secs(1), update_reciever.changed()).await {
+                available_keys_sink.add(engine.read().unwrap().get_keys());                
+            };
+            
 
         }
     }
@@ -68,9 +74,11 @@ impl Api {
         let mut update_reciever = engine.read().unwrap().get_data_updates_reciever();
         timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
         while engine.read().unwrap().in_use(){
-            let to_update = update_reciever.recv().await.unwrap();
-            if (to_update == key) {
-                timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
+            // If doesn't time out update the sunk data, otherwise stop to check if the engine this is referencing is still in use
+            if let Ok(Ok(to_update)) =  timeout(Duration::from_secs(1), update_reciever.recv()).await {
+                if (to_update == key) {
+                    timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
+                }
             }
 
         }
