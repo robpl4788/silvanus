@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/types/color_option.dart';
 import 'package:silvanus/types/series_request.dart';
 
 class KeySelector extends StatefulWidget{
@@ -72,17 +73,3 @@ class KeySelectorState extends State<KeySelector> {
   }
 }
 
-enum ColorPickerOption {
-  red(label: "Red", color: Colors.red),
-  green(label: "Green", color: Colors.green),
-  blue(label: "Blue", color: Colors.blue),
-  black(label: "Black", color: Colors.black);
-
-  const ColorPickerOption ( {
-    required this.label,
-    required this.color
-  });
-  
-  final Color color;
-  final String label;
-}

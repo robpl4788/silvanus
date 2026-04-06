@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:silvanus/types/color_option.dart';
 
 class SeriesGroupRequest {
   Map<String, SeriesRequest> group = {};
@@ -28,8 +29,10 @@ class SeriesGroupRequest {
 
   void addFreshKeys(List<String> freshKeys) {
     for (final key in freshKeys) {
-      SeriesRequest newRequest = SeriesRequest(key);
-      addRequest(newRequest);
+      if (containsKey(key) == false) {
+        SeriesRequest newRequest = SeriesRequest(key);
+        addRequest(newRequest);
+      }
     }
   }
 
@@ -45,6 +48,8 @@ class SeriesGroupRequest {
 class SeriesRequest {
   final String name;
   Color color = Colors.blue;
+
+  bool assignedColor = false;
   
   SeriesRequest(this.name);
 
@@ -53,11 +58,15 @@ class SeriesRequest {
   }
 
   Color getColor() {
+    if (assignedColor == false) {
+      setColor(ColorDistributor.distributor.getColor());
+    }
     return color;
   }
 
   void setColor (Color newColor) {
-
+    assignedColor = true;
     color = newColor;
   }
 }
+
