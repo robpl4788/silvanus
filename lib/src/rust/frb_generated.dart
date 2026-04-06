@@ -3,7 +3,8 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-import 'api/simple.dart';
+import 'api/api.dart';
+import 'api/types.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -55,7 +56,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
   @override
   Future<void> executeRustInitializers() async {
-    await api.crateApiSimpleInitApp();
+    await api.crateApiApiInitApp();
   }
 
   @override
@@ -66,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -1468442077;
+  int get rustContentHash => -380717315;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -78,11 +79,29 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Stream<List<Point>> crateApiSimpleGetTestData();
+  Future<Api> crateApiApiApiGetApi();
 
-  String crateApiSimpleGreet({required String name});
+  Stream<List<String>> crateApiApiApiGetAvailableKeys({required Api that});
 
-  Future<void> crateApiSimpleInitApp();
+  Stream<List<TimeStampedValue>> crateApiApiApiGetTimestampedSeries({
+    required Api that,
+    required String key,
+  });
+
+  Future<void> crateApiApiApiLoadCsv({
+    required Api that,
+    required String csvPath,
+  });
+
+  Future<void> crateApiApiApiLoadTest({required Api that});
+
+  Future<void> crateApiApiInitApp();
+
+  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Api;
+
+  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Api;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ApiPtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -94,62 +113,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Stream<List<Point>> crateApiSimpleGetTestData() {
-    final sink = RustStreamSink<List<Point>>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_StreamSink_list_point_Sse(sink, serializer);
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 1,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: null,
-          ),
-          constMeta: kCrateApiSimpleGetTestDataConstMeta,
-          argValues: [sink],
-          apiImpl: this,
-        ),
-      ),
-    );
-    return sink.stream;
-  }
-
-  TaskConstMeta get kCrateApiSimpleGetTestDataConstMeta =>
-      const TaskConstMeta(debugName: "get_test_data", argNames: ["sink"]);
-
-  @override
-  String crateApiSimpleGreet({required String name}) {
-    return handler.executeSync(
-      SyncTask(
-        callFfi: () {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(name, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiSimpleGreetConstMeta,
-        argValues: [name],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiSimpleGreetConstMeta =>
-      const TaskConstMeta(debugName: "greet", argNames: ["name"]);
-
-  @override
-  Future<void> crateApiSimpleInitApp() {
+  Future<Api> crateApiApiApiGetApi() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -157,7 +121,131 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiApiGetApiConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiApiGetApiConstMeta =>
+      const TaskConstMeta(debugName: "Api_get_api", argNames: []);
+
+  @override
+  Stream<List<String>> crateApiApiApiGetAvailableKeys({required Api that}) {
+    final availableKeysSink = RustStreamSink<List<String>>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+              that,
+              serializer,
+            );
+            sse_encode_StreamSink_list_String_Sse(
+              availableKeysSink,
+              serializer,
+            );
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 2,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: null,
+          ),
+          constMeta: kCrateApiApiApiGetAvailableKeysConstMeta,
+          argValues: [that, availableKeysSink],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return availableKeysSink.stream;
+  }
+
+  TaskConstMeta get kCrateApiApiApiGetAvailableKeysConstMeta =>
+      const TaskConstMeta(
+        debugName: "Api_get_available_keys",
+        argNames: ["that", "availableKeysSink"],
+      );
+
+  @override
+  Stream<List<TimeStampedValue>> crateApiApiApiGetTimestampedSeries({
+    required Api that,
+    required String key,
+  }) {
+    final timestampedSeriesSink = RustStreamSink<List<TimeStampedValue>>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+              that,
+              serializer,
+            );
+            sse_encode_StreamSink_list_time_stamped_value_Sse(
+              timestampedSeriesSink,
+              serializer,
+            );
+            sse_encode_String(key, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 3,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: null,
+          ),
+          constMeta: kCrateApiApiApiGetTimestampedSeriesConstMeta,
+          argValues: [that, timestampedSeriesSink, key],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return timestampedSeriesSink.stream;
+  }
+
+  TaskConstMeta get kCrateApiApiApiGetTimestampedSeriesConstMeta =>
+      const TaskConstMeta(
+        debugName: "Api_get_timestamped_series",
+        argNames: ["that", "timestampedSeriesSink", "key"],
+      );
+
+  @override
+  Future<void> crateApiApiApiLoadCsv({
+    required Api that,
+    required String csvPath,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+            that,
+            serializer,
+          );
+          sse_encode_String(csvPath, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
             port: port_,
           );
         },
@@ -165,15 +253,83 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimpleInitAppConstMeta,
+        constMeta: kCrateApiApiApiLoadCsvConstMeta,
+        argValues: [that, csvPath],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiApiLoadCsvConstMeta => const TaskConstMeta(
+    debugName: "Api_load_csv",
+    argNames: ["that", "csvPath"],
+  );
+
+  @override
+  Future<void> crateApiApiApiLoadTest({required Api that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+            that,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiApiLoadTestConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiApiLoadTestConstMeta =>
+      const TaskConstMeta(debugName: "Api_load_test", argNames: ["that"]);
+
+  @override
+  Future<void> crateApiApiInitApp() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiInitAppConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimpleInitAppConstMeta =>
+  TaskConstMeta get kCrateApiApiInitAppConstMeta =>
       const TaskConstMeta(debugName: "init_app", argNames: []);
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_Api => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_Api => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi;
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
@@ -182,9 +338,52 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  RustStreamSink<List<Point>> dco_decode_StreamSink_list_point_Sse(
+  Api
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
     dynamic raw,
   ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Api
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Api
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Api
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  RustStreamSink<List<String>> dco_decode_StreamSink_list_String_Sse(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  RustStreamSink<List<TimeStampedValue>>
+  dco_decode_StreamSink_list_time_stamped_value_Sse(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
   }
@@ -202,9 +401,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<Point> dco_decode_list_point(dynamic raw) {
+  List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_point).toList();
+    return (raw as List<dynamic>).map(dco_decode_String).toList();
   }
 
   @protected
@@ -214,12 +413,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Point dco_decode_point(dynamic raw) {
+  List<TimeStampedValue> dco_decode_list_time_stamped_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_time_stamped_value).toList();
+  }
+
+  @protected
+  TimeStampedValue dco_decode_time_stamped_value(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
     if (arr.length != 2)
       throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return Point(x: dco_decode_f_64(arr[0]), y: dco_decode_f_64(arr[1]));
+    return TimeStampedValue(
+      time: dco_decode_f_64(arr[0]),
+      value: dco_decode_f_64(arr[1]),
+    );
   }
 
   @protected
@@ -235,6 +443,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_String(deserializer);
@@ -242,7 +456,64 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  RustStreamSink<List<Point>> sse_decode_StreamSink_list_point_Sse(
+  Api
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return ApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  Api
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return ApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  Api
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return ApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  Api
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return ApiImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  RustStreamSink<List<String>> sse_decode_StreamSink_list_String_Sse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
+  RustStreamSink<List<TimeStampedValue>>
+  sse_decode_StreamSink_list_time_stamped_value_Sse(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -263,13 +534,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<Point> sse_decode_list_point(SseDeserializer deserializer) {
+  List<String> sse_decode_list_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <Point>[];
+    var ans_ = <String>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_point(deserializer));
+      ans_.add(sse_decode_String(deserializer));
     }
     return ans_;
   }
@@ -282,11 +553,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Point sse_decode_point(SseDeserializer deserializer) {
+  List<TimeStampedValue> sse_decode_list_time_stamped_value(
+    SseDeserializer deserializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_x = sse_decode_f_64(deserializer);
-    var var_y = sse_decode_f_64(deserializer);
-    return Point(x: var_x, y: var_y);
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TimeStampedValue>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_time_stamped_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  TimeStampedValue sse_decode_time_stamped_value(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_time = sse_decode_f_64(deserializer);
+    var var_value = sse_decode_f_64(deserializer);
+    return TimeStampedValue(time: var_time, value: var_value);
   }
 
   @protected
@@ -298,6 +583,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_decode_unit(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
   }
 
   @protected
@@ -322,15 +613,84 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_StreamSink_list_point_Sse(
-    RustStreamSink<List<Point>> self,
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    Api self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as ApiImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    Api self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as ApiImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    Api self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as ApiImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+    Api self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as ApiImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_StreamSink_list_String_Sse(
+    RustStreamSink<List<String>> self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(
       self.setupAndSerialize(
         codec: SseCodec(
-          decodeSuccessData: sse_decode_list_point,
+          decodeSuccessData: sse_decode_list_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_StreamSink_list_time_stamped_value_Sse(
+    RustStreamSink<List<TimeStampedValue>> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_time_stamped_value,
           decodeErrorData: sse_decode_AnyhowException,
         ),
       ),
@@ -351,11 +711,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_list_point(List<Point> self, SseSerializer serializer) {
+  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
-      sse_encode_point(item, serializer);
+      sse_encode_String(item, serializer);
     }
   }
 
@@ -370,10 +730,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_point(Point self, SseSerializer serializer) {
+  void sse_encode_list_time_stamped_value(
+    List<TimeStampedValue> self,
+    SseSerializer serializer,
+  ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_f_64(self.x, serializer);
-    sse_encode_f_64(self.y, serializer);
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_time_stamped_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_time_stamped_value(
+    TimeStampedValue self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_f_64(self.time, serializer);
+    sse_encode_f_64(self.value, serializer);
   }
 
   @protected
@@ -388,6 +763,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
+  }
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
@@ -398,4 +779,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
   }
+}
+
+@sealed
+class ApiImpl extends RustOpaque implements Api {
+  // Not to be used by end users
+  ApiImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  ApiImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_Api,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_Api,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_ApiPtr,
+  );
+
+  Stream<List<String>> getAvailableKeys() =>
+      RustLib.instance.api.crateApiApiApiGetAvailableKeys(that: this);
+
+  Stream<List<TimeStampedValue>> getTimestampedSeries({required String key}) =>
+      RustLib.instance.api.crateApiApiApiGetTimestampedSeries(
+        that: this,
+        key: key,
+      );
+
+  Future<void> loadCsv({required String csvPath}) =>
+      RustLib.instance.api.crateApiApiApiLoadCsv(that: this, csvPath: csvPath);
+
+  Future<void> loadTest() =>
+      RustLib.instance.api.crateApiApiApiLoadTest(that: this);
 }

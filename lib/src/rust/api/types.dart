@@ -6,26 +6,22 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-String greet({required String name}) =>
-    RustLib.instance.api.crateApiSimpleGreet(name: name);
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `clone`
 
-Stream<List<Point>> getTestData() =>
-    RustLib.instance.api.crateApiSimpleGetTestData();
+class TimeStampedValue {
+  final double time;
+  final double value;
 
-class Point {
-  final double x;
-  final double y;
-
-  const Point({required this.x, required this.y});
+  const TimeStampedValue({required this.time, required this.value});
 
   @override
-  int get hashCode => x.hashCode ^ y.hashCode;
+  int get hashCode => time.hashCode ^ value.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Point &&
+      other is TimeStampedValue &&
           runtimeType == other.runtimeType &&
-          x == other.x &&
-          y == other.y;
+          time == other.time &&
+          value == other.value;
 }

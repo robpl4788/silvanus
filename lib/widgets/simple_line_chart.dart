@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:silvanus/src/rust/api/simple.dart';
+import 'package:silvanus/engine.dart';
 
 class SimpleLineChart extends StatefulWidget {
   const SimpleLineChart({super.key});
@@ -13,15 +13,21 @@ class _LiveChartState extends State<SimpleLineChart> {
   List<FlSpot> spots = [];
 
   @override
-  void initState() {
+  initState() {
     super.initState();
+  
+    updatePoints();
+  }
 
-    // Listen to Rust stream
-    getTestData().listen((pointsFromRust) {
+  Future<void> updatePoints() async {
+    Engine.engine.api.loadTest();
+    // api.loadCsv(csvPath: "C:\\silvanus\\rust\\src\\parser\\test.csv");
+
+    Engine.engine.api.getTimestampedSeries(key: "accel_x").listen((pointsFromRust){
       setState(() {
         // Replace the entire dataset
         spots = pointsFromRust
-            .map((p) => FlSpot(p.x, p.y))
+            .map((p) => FlSpot(p.time, p.value))
             .toList();
       });
     });
