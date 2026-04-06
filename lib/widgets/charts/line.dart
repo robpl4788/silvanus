@@ -4,13 +4,14 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/types/series_request.dart';
 
 class Line extends StatefulWidget {
-  final List<String> keysToShow;
+  final SeriesGroupRequest seriesToShow;
 
   Map<String, Series> seriesMap = {};
 
-  Line({super.key, required this.keysToShow});
+  Line({super.key, required this.seriesToShow});
 
  
 
@@ -25,8 +26,8 @@ class _LineState extends State<Line> {
   @override
   initState() {
     super.initState();
-    for (final key in widget.keysToShow) {
-      _subscribeToSeries(key);
+    for (final seriesRequest in widget.seriesToShow.getAllRequests()) {
+      _subscribeToSeries(seriesRequest);
 
     }
   }
@@ -37,41 +38,40 @@ class _LineState extends State<Line> {
     widget.seriesMap.addEntries(oldWidget.seriesMap.entries);
 
     // If key currently in the set and shouldnt be remove it
-    List<String> startingKeys = widget.seriesMap.keys.toList();
-    for (final key in startingKeys) {
-      if (widget.keysToShow.contains(key) == false) {
+    for (final key in widget.seriesMap.keys.toList()) {
+      if (widget.seriesToShow.containsKey(key) == false) {
         widget.seriesMap[key]?.destroy();
         widget.seriesMap.remove(key);
       }
     }
 
     // If the key isn't in the set and should be add it
-    for (final key in widget.keysToShow)   {
-      if (widget.seriesMap.containsKey(key) == false) {
-        _subscribeToSeries(key);
+    for (final request in widget.seriesToShow.getAllRequests())   {
+      if (widget.seriesMap.containsKey(request.getKey()) == false) {
+        _subscribeToSeries(request);
       }
     }
   }
 
-  void _subscribeToSeries(String key) {
+  void _subscribeToSeries(SeriesRequest seriesRequested) {
 
   
     List<FlSpot> newSpots = [];
     
 
     final sub = Engine.engine.api
-        .getTimestampedSeries(key: key)
+        .getTimestampedSeries(key: seriesRequested.getKey())
         .listen((pointsFromRust) {
         setState(() {
           newSpots =  pointsFromRust
               .map((p) => FlSpot(p.time, p.value))
               .toList();
           });
-          widget.seriesMap[key]?.setSpots(newSpots);
+          widget.seriesMap[seriesRequested.getKey()]?.setSpots(newSpots);
 
         });
-      Series newSeries = Series(sub, newSpots);
-      widget.seriesMap[key] = newSeries;
+      Series newSeries = Series(sub, newSpots, seriesRequested);
+      widget.seriesMap[seriesRequested.getKey()] = newSeries;
 
   }
 
@@ -95,7 +95,7 @@ class _LineState extends State<Line> {
             LineChartBarData(
               spots: currentSeries.getSpots(),
               isCurved: false,
-              color: Colors.blue,
+              color: currentSeries.getRequest().getColor(),
               barWidth: 2,
               dotData: FlDotData(show: false),
             ),
@@ -110,8 +110,9 @@ class _LineState extends State<Line> {
 class Series {
   final StreamSubscription subscription;
   List<FlSpot> spots;
+  SeriesRequest request;
 
-  Series(this.subscription, this.spots);
+  Series(this.subscription, this.spots, this.request);
 
   void setSpots( List<FlSpot> newSpots) {
     spots = newSpots;
@@ -124,6 +125,10 @@ class Series {
 
   void destroy() {
     subscription.cancel();
+  }
+
+  SeriesRequest getRequest() {
+    return request;
   }
   
 

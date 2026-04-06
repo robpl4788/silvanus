@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/types/series_request.dart';
 
 class KeySelector extends StatefulWidget{
 
-  final void Function(Set<String> selected) onSelectionChanged;
+  final void Function(SeriesGroupRequest selected) onSelectionChanged;
 
   const KeySelector({super.key, required this.onSelectionChanged});
   
@@ -12,7 +13,8 @@ class KeySelector extends StatefulWidget{
 }
 
 class KeySelectorState extends State<KeySelector> {
-  List<String> options = [];
+  SeriesGroupRequest options = SeriesGroupRequest.empty();
+  final SeriesGroupRequest selected = SeriesGroupRequest.empty();
 
   @override
   void initState() {
@@ -21,44 +23,66 @@ class KeySelectorState extends State<KeySelector> {
 
     Engine.engine.api.getAvailableKeys().listen((keys){
       setState(() {
-        // Replace the entire dataset
-        options = keys;
-        options.sort();
+        options.addFreshKeys(keys);
       });
     });
   }
 
-  final Set<String> selected = {};
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        for (final item in options)
-          CheckboxListTile(
-            title: Text(item),
-            value: selected.contains(item),
-            onChanged: (bool? checked) {
-              setState(() {
-                if (checked == true) {
-                  selected.add(item);
-                } else {
-                  selected.remove(item);
-                }
-              });
+        for (final request in options.getAllRequests())
+          Row(
+            children: [
+              if (selected.contains(request)) colourPicker(request),
+              Expanded(child: CheckboxListTile(
+                title: Text(request.name),
+                value: selected.contains(request),
+                onChanged: (bool? checked) {
+                  setState(() {
+                    if (checked == true) {
+                      selected.addRequest(request);
+                    } else {
+                      selected.removeRequest(request);
+                    }
+                  });
 
-              widget.onSelectionChanged(selected);
-            },
-          ),
-      ],
+                  widget.onSelectionChanged(selected);
+                },
+              )),
+      ],)]
     );
   }
 
-  DropdownMenu colourPicker() {
-    return DropdownMenu(dropdownMenuEntries: [
-      DropdownMenuEntry(value: "red", label: "red"),
-      DropdownMenuEntry(value: "blue", label: "blue"),
-      DropdownMenuEntry(value: "green", label: "green"),
-    ]);
+  DropdownMenu colourPicker(SeriesRequest request) {
+    return  DropdownMenu(
+            dropdownMenuEntries: [
+              for (final option in ColorPickerOption.values) DropdownMenuEntry(value: option.color, label: option.label) ],
+            onSelected: (dynamic value) {
+              if (value is Color) {
+                request.setColor(value);
+                setState(() {
+                  selected.addRequest(request);
+                  options.addRequest(request);
+                } ); } },
+            initialSelection: request.getColor(),
+            );
   }
+}
+
+enum ColorPickerOption {
+  red(label: "Red", color: Colors.red),
+  green(label: "Green", color: Colors.green),
+  blue(label: "Blue", color: Colors.blue),
+  black(label: "Black", color: Colors.black);
+
+  const ColorPickerOption ( {
+    required this.label,
+    required this.color
+  });
+  
+  final Color color;
+  final String label;
 }
