@@ -40,12 +40,10 @@ impl Api {
         old_engine.set_not_in_use();
         drop(old_engine);
         
-        println!("pls Lol");
 
         self.engine = Arc::new(RwLock::new(Engine::new()));
 
         let engine = self.engine.clone();
-        println!("pls Lol pt 2");
         thread::spawn(move || {
             add_test_data(&engine);
         });
@@ -57,7 +55,6 @@ impl Api {
         let mut update_reciever = engine.read().unwrap().get_key_updates_reciever();
         available_keys_sink.add(engine.read().unwrap().get_keys());
         while engine.read().unwrap().in_use(){
-            println!("new keys");
             update_reciever.changed().await;
             available_keys_sink.add(engine.read().unwrap().get_keys());
 

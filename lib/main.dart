@@ -2,8 +2,8 @@
 
 // import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/widgets/analysis_tab.dart';
 
-import 'widgets/simple_line_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:silvanus/src/rust/frb_generated.dart';
 
@@ -15,7 +15,6 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,10 +24,11 @@ class MyApp extends StatelessWidget {
         child: Column(
           mainAxisAlignment: .center,
          children: [
-            SizedBox(
+          SizedBox(
               height: 300,
-              child: SimpleLineChart(),
+              child: AnalysisTab(),
             ),
+            
           ]
         )
         ),
