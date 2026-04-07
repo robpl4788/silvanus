@@ -15,75 +15,71 @@ use tokio::time::timeout;
 
 
 #[flutter_rust_bridge::frb(opaque)]
-pub struct Api {
-    engine: Arc<RwLock<Engine>>
+type Api = Arc<RwLock<Engine>>;
+
+
+#[frb]
+pub fn load_csv(csv_path: String) -> Api {
+    println!("Loading CSV");
+    
+    Arc::new(RwLock::new(parse_csv(csv_path)))
 }
 
-impl Api {
-    #[frb]
-    pub fn get_api() -> Api {
-        Api {
-            engine: Arc::new(RwLock::new(Engine::new())),
-        }
-    }
+#[frb]
+pub fn load_none() -> Api {
+    println!("Loading None");
+    
+    let mut engine = Engine::new();
+    engine.set_name("None".to_string());
+    
+    Arc::new(RwLock::new(engine))
+}
 
-    #[frb]
-    pub fn load_csv(&mut self, csv_path: String) {
-        let mut old_engine = self.engine.write().unwrap();
-        old_engine.set_not_in_use();
-        drop(old_engine);
+#[frb]
+pub fn load_test() -> Api {
+    println!("Loading Test");
+
+    let engine = Arc::new(RwLock::new(Engine::new()));
+
+    let engine_clone = engine.clone();
+    thread::spawn(move || {
+        add_test_data(&engine_clone);
+    });
+
+    engine
+}
+
+#[frb]
+pub async fn get_available_keys (engine: &Api, available_keys_sink: frb_generated::StreamSink<Vec<String>>) {
+    let engine = engine.clone();
+    let mut update_reciever = engine.read().unwrap().get_key_updates_reciever();
+    available_keys_sink.add(engine.read().unwrap().get_keys());
+    while engine.read().unwrap().in_use(){
+
+        // If doesn't time out update the sunk keys, otherwise stop to check if the engine this is referencing is still in use
+        if let Ok(_) =  timeout(Duration::from_secs(1), update_reciever.changed()).await {
+            available_keys_sink.add(engine.read().unwrap().get_keys());                
+        };
         
-        self.engine = Arc::new(RwLock::new(parse_csv(csv_path)));
+
     }
+}
 
-    #[frb]
-    pub fn load_test(&mut self) {
-        let mut old_engine = self.engine.write().unwrap();
-        old_engine.set_not_in_use();
-        drop(old_engine);
-        
-
-        self.engine = Arc::new(RwLock::new(Engine::new()));
-
-        let engine = self.engine.clone();
-        thread::spawn(move || {
-            add_test_data(&engine);
-        });
-    }
-
-    #[frb]
-    pub async fn get_available_keys (&self, available_keys_sink: frb_generated::StreamSink<Vec<String>>) {
-        let engine = self.engine.clone();
-        let mut update_reciever = engine.read().unwrap().get_key_updates_reciever();
-        available_keys_sink.add(engine.read().unwrap().get_keys());
-        while engine.read().unwrap().in_use(){
-
-            // If doesn't time out update the sunk keys, otherwise stop to check if the engine this is referencing is still in use
-            if let Ok(_) =  timeout(Duration::from_secs(1), update_reciever.changed()).await {
-                available_keys_sink.add(engine.read().unwrap().get_keys());                
-            };
-            
-
-        }
-    }
-
-    #[frb]
-    pub async fn get_timestamped_series(&self, timestamped_series_sink: frb_generated::StreamSink<Vec<TimeStampedValue>>, key: String){
-        let engine = self.engine.clone();
-        
-        let mut update_reciever = engine.read().unwrap().get_data_updates_reciever();
-        timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
-        while engine.read().unwrap().in_use(){
-            // If doesn't time out update the sunk data, otherwise stop to check if the engine this is referencing is still in use
-            if let Ok(Ok(to_update)) =  timeout(Duration::from_secs(1), update_reciever.recv()).await {
-                if (to_update == key) {
-                    timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
-                }
+#[frb]
+pub async fn get_timestamped_series(engine: &Api, timestamped_series_sink: frb_generated::StreamSink<Vec<TimeStampedValue>>, key: String){
+    let engine = engine.clone();
+    
+    let mut update_reciever = engine.read().unwrap().get_data_updates_reciever();
+    timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
+    while engine.read().unwrap().in_use(){
+        // If doesn't time out update the sunk data, otherwise stop to check if the engine this is referencing is still in use
+        if let Ok(Ok(to_update)) =  timeout(Duration::from_secs(1), update_reciever.recv()).await {
+            if (to_update == key) {
+                timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
             }
-
         }
-    }
 
+    }
 }
 
 

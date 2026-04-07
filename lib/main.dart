@@ -2,6 +2,7 @@
 
 // import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/widgets/analysis_tab.dart';
 
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ import 'package:silvanus/widgets/source_select.dart';
 
 Future<void> main() async {
   await RustLib.init();
-  await Engine.engine.begin();
+  // await Engine.engine.begin();
   runApp(const MyApp());
 }
 
@@ -22,18 +23,35 @@ const MyApp({super.key});
 }
 
 class _MyAppState extends State<MyApp> {
-  SourceOptions selectedSource = SourceOptions.none;
+  ArcEngine? _engine;
 
-  Key refreshKey = UniqueKey();
-
-  void rebuildTab() {
-    setState(() {
-      refreshKey = UniqueKey();
-    });
+  @override
+  void initState() {
+    super.initState();
+    _initEngine();
   }
+
+  Future<void> _initEngine() async {
+    final initialEngine = await loadTest();
+    setState(() {
+      _engine = initialEngine;
+    });
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    final engine = _engine; // local variable
+   
+    
+    if (engine == null) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: const Text('Silvanus')),
@@ -43,9 +61,15 @@ class _MyAppState extends State<MyApp> {
          children: [
           SizedBox(
               height: 300,
-              child: AnalysisTab(key: ValueKey(refreshKey),
+              child: AnalysisTab(engine: engine,  key: ValueKey(_engine!.hashCode),
             ),),
-            SourceSelector(onSelectionChanged: (SourceOptions src) { rebuildTab();}),
+            SourceSelector(onSelectionChanged: (Future<ArcEngine> engineFuture) async { 
+              ArcEngine currentEngine = await engineFuture;
+
+              setState(() {
+                _engine = currentEngine;
+              });
+            }),
           ]
         )
         ),

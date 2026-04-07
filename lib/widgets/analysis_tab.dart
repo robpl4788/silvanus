@@ -1,12 +1,14 @@
 
 import 'package:flutter/material.dart';
+import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/types/series_request.dart';
 import 'package:silvanus/widgets/charts/line.dart';
 import 'package:silvanus/widgets/key_selector.dart';
 import 'package:silvanus/widgets/source_select.dart';
 
 class AnalysisTab extends StatefulWidget{
-  const AnalysisTab({super.key});
+  final ArcEngine engine;
+  const AnalysisTab({super.key, required this.engine});
 
   @override
   State<StatefulWidget> createState() => _AnalysisTabState();
@@ -19,7 +21,6 @@ class _AnalysisTabState extends State<AnalysisTab> {
 
   @override
   Widget build(BuildContext context) {
-    print("Hi");
 
     return Row(
       children: [
@@ -32,6 +33,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
                 selectedSeries = newSelection;
               });
             },
+            engine: widget.engine,
+            key: ValueKey(widget.engine.hashCode),
+
           ),
         ),
 
@@ -40,6 +44,9 @@ class _AnalysisTabState extends State<AnalysisTab> {
           flex: 2,
           child: Line(
             seriesToShow: selectedSeries,
+            key: ValueKey(widget.engine.hashCode),
+            engine: widget.engine,
+
           ),
         ),
       ],

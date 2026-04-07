@@ -102,3 +102,9 @@ impl Engine {
         result
     }
 }
+
+impl Drop for Engine {
+    fn drop(&mut self) {
+        println!("ENGINE DROPPED");
+    }
+}

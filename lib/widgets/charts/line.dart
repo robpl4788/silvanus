@@ -4,14 +4,17 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/types/series_request.dart';
 
 class Line extends StatefulWidget {
   final SeriesGroupRequest seriesToShow;
 
+  final ArcEngine engine;
+
   Map<String, Series> seriesMap = {};
 
-  Line({super.key, required this.seriesToShow});
+  Line({super.key, required this.seriesToShow, required this.engine});
 
  
 
@@ -25,6 +28,9 @@ class _LineState extends State<Line> {
   
   @override
   initState() {
+    
+
+    
     super.initState();
     for (final seriesRequest in widget.seriesToShow.getAllRequests()) {
       _subscribeToSeries(seriesRequest);
@@ -34,8 +40,13 @@ class _LineState extends State<Line> {
 
   @override
   void didUpdateWidget(covariant Line oldWidget) {
+    
     super.didUpdateWidget(oldWidget);
     widget.seriesMap.addEntries(oldWidget.seriesMap.entries);
+
+
+
+    
 
     // If key currently in the set and shouldnt be remove it
     for (final key in widget.seriesMap.keys.toList()) {
@@ -57,10 +68,11 @@ class _LineState extends State<Line> {
 
   
     List<FlSpot> newSpots = [];
+
+
     
 
-    final sub = Engine.engine.api
-        .getTimestampedSeries(key: seriesRequested.getKey())
+    final sub = getTimestampedSeries(key: seriesRequested.getKey(), engine: widget.engine)
         .listen((pointsFromRust) {
         setState(() {
           newSpots =  pointsFromRust
@@ -78,6 +90,8 @@ class _LineState extends State<Line> {
   @override
   void dispose() {
 
+
+    
     for (final currentSeries in widget.seriesMap.values) {
       currentSeries.destroy();
     }
@@ -87,6 +101,8 @@ class _LineState extends State<Line> {
   @override
   Widget build(BuildContext context) {
 
+
+    
 
     return LineChart(
       LineChartData(

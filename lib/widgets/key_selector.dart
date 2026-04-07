@@ -1,13 +1,19 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/types/color_option.dart';
 import 'package:silvanus/types/series_request.dart';
 
 class KeySelector extends StatefulWidget{
+  final ArcEngine engine;
+
 
   final void Function(SeriesGroupRequest selected) onSelectionChanged;
 
-  const KeySelector({super.key, required this.onSelectionChanged});
+  const KeySelector({super.key, required this.onSelectionChanged, required this.engine});
   
   @override
   State<KeySelector> createState() => KeySelectorState();
@@ -16,12 +22,15 @@ class KeySelector extends StatefulWidget{
 class KeySelectorState extends State<KeySelector> {
   SeriesGroupRequest options = SeriesGroupRequest.empty();
   final SeriesGroupRequest selected = SeriesGroupRequest.empty();
+  late final StreamSubscription _keySub;
 
   @override
   void initState() {
     super.initState();
 
-    Engine.engine.api.getAvailableKeys().listen((keys){
+    
+
+    _keySub = getAvailableKeys(engine: widget.engine).listen((keys){
       setState(() {
         options.addFreshKeys(keys);
       });
@@ -31,6 +40,7 @@ class KeySelectorState extends State<KeySelector> {
 
   @override
   Widget build(BuildContext context) {
+
     return ListView(
       children: [
         for (final request in options.getAllRequests())
@@ -69,6 +79,12 @@ class KeySelectorState extends State<KeySelector> {
                 } ); } },
             initialSelection: request.getColor(),
             );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _keySub.cancel();
   }
 }
 

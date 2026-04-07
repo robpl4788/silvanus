@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -380717315;
+  int get rustContentHash => 704396593;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -79,29 +79,28 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<Api> crateApiApiApiGetApi();
+  Stream<List<String>> crateApiApiGetAvailableKeys({required ArcEngine engine});
 
-  Stream<List<String>> crateApiApiApiGetAvailableKeys({required Api that});
-
-  Stream<List<TimeStampedValue>> crateApiApiApiGetTimestampedSeries({
-    required Api that,
+  Stream<List<TimeStampedValue>> crateApiApiGetTimestampedSeries({
+    required ArcEngine engine,
     required String key,
   });
 
-  Future<void> crateApiApiApiLoadCsv({
-    required Api that,
-    required String csvPath,
-  });
-
-  Future<void> crateApiApiApiLoadTest({required Api that});
-
   Future<void> crateApiApiInitApp();
 
-  RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_Api;
+  Future<ArcEngine> crateApiApiLoadCsv({required String csvPath});
 
-  RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_Api;
+  Future<ArcEngine> crateApiApiLoadNone();
 
-  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ApiPtr;
+  Future<ArcEngine> crateApiApiLoadTest();
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_ArcEngine;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_ArcEngine;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_ArcEnginePtr;
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -113,49 +112,69 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<Api> crateApiApiApiGetApi() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 1,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData:
-              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiApiApiGetApiConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiApiApiGetApiConstMeta =>
-      const TaskConstMeta(debugName: "Api_get_api", argNames: []);
-
-  @override
-  Stream<List<String>> crateApiApiApiGetAvailableKeys({required Api that}) {
+  Stream<List<String>> crateApiApiGetAvailableKeys({
+    required ArcEngine engine,
+  }) {
     final availableKeysSink = RustStreamSink<List<String>>();
     unawaited(
       handler.executeNormal(
         NormalTask(
           callFfi: (port_) {
             final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-              that,
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
+              engine,
               serializer,
             );
             sse_encode_StreamSink_list_String_Sse(
               availableKeysSink,
               serializer,
             );
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 1,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: null,
+          ),
+          constMeta: kCrateApiApiGetAvailableKeysConstMeta,
+          argValues: [engine, availableKeysSink],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return availableKeysSink.stream;
+  }
+
+  TaskConstMeta get kCrateApiApiGetAvailableKeysConstMeta =>
+      const TaskConstMeta(
+        debugName: "get_available_keys",
+        argNames: ["engine", "availableKeysSink"],
+      );
+
+  @override
+  Stream<List<TimeStampedValue>> crateApiApiGetTimestampedSeries({
+    required ArcEngine engine,
+    required String key,
+  }) {
+    final timestampedSeriesSink = RustStreamSink<List<TimeStampedValue>>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
+              engine,
+              serializer,
+            );
+            sse_encode_StreamSink_list_time_stamped_value_Sse(
+              timestampedSeriesSink,
+              serializer,
+            );
+            sse_encode_String(key, serializer);
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
@@ -167,54 +186,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             decodeSuccessData: sse_decode_unit,
             decodeErrorData: null,
           ),
-          constMeta: kCrateApiApiApiGetAvailableKeysConstMeta,
-          argValues: [that, availableKeysSink],
-          apiImpl: this,
-        ),
-      ),
-    );
-    return availableKeysSink.stream;
-  }
-
-  TaskConstMeta get kCrateApiApiApiGetAvailableKeysConstMeta =>
-      const TaskConstMeta(
-        debugName: "Api_get_available_keys",
-        argNames: ["that", "availableKeysSink"],
-      );
-
-  @override
-  Stream<List<TimeStampedValue>> crateApiApiApiGetTimestampedSeries({
-    required Api that,
-    required String key,
-  }) {
-    final timestampedSeriesSink = RustStreamSink<List<TimeStampedValue>>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-              that,
-              serializer,
-            );
-            sse_encode_StreamSink_list_time_stamped_value_Sse(
-              timestampedSeriesSink,
-              serializer,
-            );
-            sse_encode_String(key, serializer);
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 3,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: null,
-          ),
-          constMeta: kCrateApiApiApiGetTimestampedSeriesConstMeta,
-          argValues: [that, timestampedSeriesSink, key],
+          constMeta: kCrateApiApiGetTimestampedSeriesConstMeta,
+          argValues: [engine, timestampedSeriesSink, key],
           apiImpl: this,
         ),
       ),
@@ -222,79 +195,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     return timestampedSeriesSink.stream;
   }
 
-  TaskConstMeta get kCrateApiApiApiGetTimestampedSeriesConstMeta =>
+  TaskConstMeta get kCrateApiApiGetTimestampedSeriesConstMeta =>
       const TaskConstMeta(
-        debugName: "Api_get_timestamped_series",
-        argNames: ["that", "timestampedSeriesSink", "key"],
+        debugName: "get_timestamped_series",
+        argNames: ["engine", "timestampedSeriesSink", "key"],
       );
-
-  @override
-  Future<void> crateApiApiApiLoadCsv({
-    required Api that,
-    required String csvPath,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-            that,
-            serializer,
-          );
-          sse_encode_String(csvPath, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiApiApiLoadCsvConstMeta,
-        argValues: [that, csvPath],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiApiApiLoadCsvConstMeta => const TaskConstMeta(
-    debugName: "Api_load_csv",
-    argNames: ["that", "csvPath"],
-  );
-
-  @override
-  Future<void> crateApiApiApiLoadTest({required Api that}) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-            that,
-            serializer,
-          );
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 5,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiApiApiLoadTestConstMeta,
-        argValues: [that],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiApiApiLoadTestConstMeta =>
-      const TaskConstMeta(debugName: "Api_load_test", argNames: ["that"]);
 
   @override
   Future<void> crateApiApiInitApp() {
@@ -305,7 +210,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 3,
             port: port_,
           );
         },
@@ -323,13 +228,98 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiApiInitAppConstMeta =>
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
+  @override
+  Future<ArcEngine> crateApiApiLoadCsv({required String csvPath}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(csvPath, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiLoadCsvConstMeta,
+        argValues: [csvPath],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiLoadCsvConstMeta =>
+      const TaskConstMeta(debugName: "load_csv", argNames: ["csvPath"]);
+
+  @override
+  Future<ArcEngine> crateApiApiLoadNone() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiLoadNoneConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiLoadNoneConstMeta =>
+      const TaskConstMeta(debugName: "load_none", argNames: []);
+
+  @override
+  Future<ArcEngine> crateApiApiLoadTest() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiLoadTestConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiLoadTestConstMeta =>
+      const TaskConstMeta(debugName: "load_test", argNames: []);
+
   RustArcIncrementStrongCountFnType
-  get rust_arc_increment_strong_count_Api => wire
-      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi;
+  get rust_arc_increment_strong_count_ArcEngine => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine;
 
   RustArcDecrementStrongCountFnType
-  get rust_arc_decrement_strong_count_Api => wire
-      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi;
+  get rust_arc_decrement_strong_count_ArcEngine => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine;
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
@@ -338,39 +328,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Api
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+  ArcEngine
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    return ArcEngineImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
-  Api
-  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+  ArcEngine
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    return ArcEngineImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
-  Api
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+  ArcEngine
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
     dynamic raw,
   ) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
-  }
-
-  @protected
-  Api
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-    dynamic raw,
-  ) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return ApiImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    return ArcEngineImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -456,48 +437,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  Api
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+  ArcEngine
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return ApiImpl.frbInternalSseDecode(
+    return ArcEngineImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
   }
 
   @protected
-  Api
-  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+  ArcEngine
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return ApiImpl.frbInternalSseDecode(
+    return ArcEngineImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
   }
 
   @protected
-  Api
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
+  ArcEngine
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return ApiImpl.frbInternalSseDecode(
-      sse_decode_usize(deserializer),
-      sse_decode_i_32(deserializer),
-    );
-  }
-
-  @protected
-  Api
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-    SseDeserializer deserializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return ApiImpl.frbInternalSseDecode(
+    return ArcEngineImpl.frbInternalSseDecode(
       sse_decode_usize(deserializer),
       sse_decode_i_32(deserializer),
     );
@@ -614,52 +583,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-    Api self,
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
+    ArcEngine self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
-      (self as ApiImpl).frbInternalSseEncode(move: true),
+      (self as ArcEngineImpl).frbInternalSseEncode(move: true),
       serializer,
     );
   }
 
   @protected
   void
-  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-    Api self,
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
+    ArcEngine self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
-      (self as ApiImpl).frbInternalSseEncode(move: false),
+      (self as ArcEngineImpl).frbInternalSseEncode(move: false),
       serializer,
     );
   }
 
   @protected
   void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-    Api self,
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
+    ArcEngine self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_usize(
-      (self as ApiImpl).frbInternalSseEncode(move: false),
-      serializer,
-    );
-  }
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApi(
-    Api self,
-    SseSerializer serializer,
-  ) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-      (self as ApiImpl).frbInternalSseEncode(move: null),
+      (self as ArcEngineImpl).frbInternalSseEncode(move: null),
       serializer,
     );
   }
@@ -782,36 +738,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 }
 
 @sealed
-class ApiImpl extends RustOpaque implements Api {
+class ArcEngineImpl extends RustOpaque implements ArcEngine {
   // Not to be used by end users
-  ApiImpl.frbInternalDcoDecode(List<dynamic> wire)
+  ArcEngineImpl.frbInternalDcoDecode(List<dynamic> wire)
     : super.frbInternalDcoDecode(wire, _kStaticData);
 
   // Not to be used by end users
-  ApiImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+  ArcEngineImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
     : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
 
   static final _kStaticData = RustArcStaticData(
     rustArcIncrementStrongCount:
-        RustLib.instance.api.rust_arc_increment_strong_count_Api,
+        RustLib.instance.api.rust_arc_increment_strong_count_ArcEngine,
     rustArcDecrementStrongCount:
-        RustLib.instance.api.rust_arc_decrement_strong_count_Api,
+        RustLib.instance.api.rust_arc_decrement_strong_count_ArcEngine,
     rustArcDecrementStrongCountPtr:
-        RustLib.instance.api.rust_arc_decrement_strong_count_ApiPtr,
+        RustLib.instance.api.rust_arc_decrement_strong_count_ArcEnginePtr,
   );
-
-  Stream<List<String>> getAvailableKeys() =>
-      RustLib.instance.api.crateApiApiApiGetAvailableKeys(that: this);
-
-  Stream<List<TimeStampedValue>> getTimestampedSeries({required String key}) =>
-      RustLib.instance.api.crateApiApiApiGetTimestampedSeries(
-        that: this,
-        key: key,
-      );
-
-  Future<void> loadCsv({required String csvPath}) =>
-      RustLib.instance.api.crateApiApiApiLoadCsv(that: this, csvPath: csvPath);
-
-  Future<void> loadTest() =>
-      RustLib.instance.api.crateApiApiApiLoadTest(that: this);
 }

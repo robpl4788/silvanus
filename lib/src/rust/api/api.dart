@@ -7,15 +7,23 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'types.dart';
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Api>>
-abstract class Api implements RustOpaqueInterface {
-  static Future<Api> getApi() => RustLib.instance.api.crateApiApiApiGetApi();
+Future<ArcEngine> loadCsv({required String csvPath}) =>
+    RustLib.instance.api.crateApiApiLoadCsv(csvPath: csvPath);
 
-  Stream<List<String>> getAvailableKeys();
+Future<ArcEngine> loadNone() => RustLib.instance.api.crateApiApiLoadNone();
 
-  Stream<List<TimeStampedValue>> getTimestampedSeries({required String key});
+Future<ArcEngine> loadTest() => RustLib.instance.api.crateApiApiLoadTest();
 
-  Future<void> loadCsv({required String csvPath});
+Stream<List<String>> getAvailableKeys({required ArcEngine engine}) =>
+    RustLib.instance.api.crateApiApiGetAvailableKeys(engine: engine);
 
-  Future<void> loadTest();
-}
+Stream<List<TimeStampedValue>> getTimestampedSeries({
+  required ArcEngine engine,
+  required String key,
+}) => RustLib.instance.api.crateApiApiGetTimestampedSeries(
+  engine: engine,
+  key: key,
+);
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Arc < RwLock < Engine > >>>
+abstract class ArcEngine implements RustOpaqueInterface {}

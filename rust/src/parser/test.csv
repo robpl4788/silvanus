@@ -1,4 +1,4 @@
-time,accel_x,accel_y,accel_z,battery_voltage
+time,vel_x,vel_y,vel_z,battery_voltage
 0.000,0.12,-0.05,9.81,12.60
 0.050,0.18,-0.02,9.79,12.59
 0.100,0.25,0.01,9.82,12.58

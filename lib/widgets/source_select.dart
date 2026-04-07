@@ -1,10 +1,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:silvanus/engine.dart';
+import 'package:silvanus/src/rust/api/api.dart';
 
 class SourceSelector extends StatefulWidget{
 
-  final void Function(SourceOptions src) onSelectionChanged;
+  final Future<void> Function(Future<ArcEngine>) onSelectionChanged;
 
   const SourceSelector({super.key, required this.onSelectionChanged});
   
@@ -13,28 +14,33 @@ class SourceSelector extends StatefulWidget{
 }
 
 class SourceSelectorState extends State<SourceSelector> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return DropdownMenu(
             dropdownMenuEntries:  [
               DropdownMenuEntry(value: SourceOptions.random, label: SourceOptions.random.label),
-              DropdownMenuEntry(value: SourceOptions.csv, label: SourceOptions.csv.label), ] ,
+              DropdownMenuEntry(value: SourceOptions.csv, label: SourceOptions.csv.label) ,
+              DropdownMenuEntry(value: SourceOptions.none, label: SourceOptions.none.label), ] ,
             onSelected: (dynamic value) {
               if (value is SourceOptions) {
+                Future<ArcEngine> newEngineFuture;
                 switch (value) {
                   case SourceOptions.random:
-                    Engine.engine.api.loadTest();
-                    print("select rand");
+                    newEngineFuture =  loadTest();
                     break;
                   case SourceOptions.csv:
-                    print("select csv");
-                    Engine.engine.api.loadCsv(csvPath: "C:\\silvanus\\rust\\src\\parser\\test.csv");
+                    newEngineFuture = loadCsv(csvPath: "C:\\silvanus\\rust\\src\\parser\\test.csv");
                     break;
                   case SourceOptions.none:
-                    print("select none which does nothing atm");
+                    newEngineFuture = loadNone();
                     break;
                 }
+                widget.onSelectionChanged(newEngineFuture);
               }
             }
             );
