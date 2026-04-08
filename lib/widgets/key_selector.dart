@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:silvanus/engine.dart';
 import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/types/color_option.dart';
 import 'package:silvanus/types/series_request.dart';

@@ -1,7 +1,6 @@
 // The original content is temporarily commented out to allow generating a self-contained demo - feel free to uncomment later.
 
 // import 'package:flutter/material.dart';
-import 'package:silvanus/engine.dart';
 import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/widgets/analysis_tab.dart';
 
