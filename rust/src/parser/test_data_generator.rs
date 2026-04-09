@@ -15,19 +15,22 @@ pub fn add_test_data(engine: &Arc<RwLock<Engine>>) {
     }
 
 
-let labels = [
-    "accel_x".to_string(),
-    "accel_z".to_string(),
-    "battery_voltage".to_string(),
-    "accel_y".to_string(),
-];
+    let labels = [
+        "accel_x".to_string(),
+        "accel_z".to_string(),
+        "battery_voltage".to_string(),
+        "accel_y".to_string(),
+    ];
+
+    let start_time: SystemTime = SystemTime::now();
+
     loop {
 
         for label in &labels {
 
             let time: SystemTime = SystemTime::now();
             let since_the_epoch = time
-                .duration_since(UNIX_EPOCH)
+                .duration_since(start_time)
                 .expect("time should go forward");
             {
                 let mut rng: rand::prelude::ThreadRng = rand::rng();

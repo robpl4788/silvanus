@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:silvanus/src/rust/api/api.dart';
 import 'package:silvanus/src/rust/api/types.dart';
@@ -24,11 +26,12 @@ class Line extends StatefulWidget {
 
 class _LineState extends State<Line> {
   
-  double? minTimeToShow;
-  double? maxTimeToShow;
+  double minTimeToShow = 0;
+  double maxTimeToShow = 0;
   late final ZoomManager zoomManager;
 
-  void setTimeToShow(({double? newMin, double? newMax}) newTime) {
+  void setTimeToShow(({double newMin, double newMax}) newTime) {
+    // print("setting: $minTimeToShow -> $maxTimeToShow");
     setState(() {
       minTimeToShow = newTime.newMin;
       maxTimeToShow = newTime.newMax;
@@ -142,10 +145,22 @@ class _LineState extends State<Line> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onScaleStart: (details) => zoomManager.startScale(details, context.size!.width),
+    return Listener(
+      onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            if (event.scrollDelta.dy.abs() > event.scrollDelta.dx.abs()) {
+              zoomManager.updateZoom(-event.scrollDelta.dy / 50);
 
-      onScaleUpdate: (details) => setTimeToShow(zoomManager.updateScale(details)),
+            } else {
+              zoomManager.startZoom(event.localPosition.dx, context.size!.width);
+              zoomManager.updatePan(-event.scrollDelta.dx / 1000);
+            }
+          }
+        },
+      child: GestureDetector(
+      onVerticalDragStart: (details) => zoomManager.startZoom(details.localPosition.dx, context.size!.width),
+      onVerticalDragUpdate: (details) => zoomManager.updateZoom((details.primaryDelta ?? 0) / 50),
+      onHorizontalDragUpdate: (details) => zoomManager.updatePan((details.primaryDelta ?? 0) / 50),
 
       child:  LineChart(
       LineChartData(
@@ -163,7 +178,7 @@ class _LineState extends State<Line> {
             ),
         ],
       ),
-    ));
+    )));
   }
 }
 
@@ -205,23 +220,23 @@ class Series {
 class ZoomManager {
   ZoomManager(this.onShowTimeChanged);
   
-  double? showTimeWidth;
-  double? showTimeMax;
+  bool pinnedToMax = false;
+  bool pinnedToMin = false;
 
-  late double startWidth;
-  late double startMaxTime;
-  late bool startedWithAnyTime;
-
-  double t = 0;
-  double focalTime = 0; // 0 → left, 1 → right
-
-  
-  final void Function(({double? newMin, double? newMax})) onShowTimeChanged;
+  double showTimeMin = 0.3;
+  double showTimeMax = 0.5;
 
   bool hasAnyTime = false;
 
   double minTime = 0;
   double maxTime = 0;
+
+  double focalTime = 0;
+  double t = 0;
+
+  
+  final void Function(({double newMin, double newMax})) onShowTimeChanged;
+
 
   double getMinTime() {
     return minTime;
@@ -232,6 +247,9 @@ class ZoomManager {
   }
 
   void addTimeMeasurement(List<TimeStampedValue> newTimes) {
+
+    onShowTimeChanged((newMax: showTimeMax, newMin: 0.2));
+
     for (TimeStampedValue value in newTimes) {
       if (hasAnyTime == false) {
         minTime = value.time;
@@ -246,64 +264,112 @@ class ZoomManager {
         maxTime = value.time;
       }
     }
-  }
 
-  void startScale(ScaleStartDetails details, double chartWidth) {
+    if (pinnedToMax && pinnedToMin) {
+      showTimeMax = maxTime;
+      showTimeMin = minTime;
 
-
-
-    double? innerShowTimeMax = showTimeMax;
-    double? innerShowTimeWidth = showTimeWidth;
-    startedWithAnyTime = hasAnyTime;
-    
-    if (innerShowTimeMax != null) {
-      startMaxTime = innerShowTimeMax;
-      if (innerShowTimeWidth != null) {
-        startWidth = innerShowTimeWidth;
-      } else {
-        startWidth = maxTime - minTime;
+    } else if (pinnedToMin) {
+      double width = showTimeMax - showTimeMin;
+      showTimeMin = minTime;
+      showTimeMax = minTime + width;
+      if (showTimeMax > maxTime) {
+        showTimeMax = maxTime;
       }
-    } else {
-      startMaxTime = maxTime;
-      startWidth = maxTime - minTime;
+    } else if (pinnedToMax) {
+      double width = showTimeMax - showTimeMin;
+      showTimeMax = maxTime;
+      showTimeMin = maxTime - width;
+      if (showTimeMin < minTime) {
+        showTimeMin = minTime;
+      }
     }
-
-    t = details.localFocalPoint.dx / chartWidth; // 0 → left, 1 → right
-
-    focalTime = startMaxTime - startWidth * t;
+    onShowTimeChanged((newMax: showTimeMax, newMin: showTimeMin));
   }
 
-  
-  ({double? newMin, double? newMax}) updateScale(ScaleUpdateDetails details) {
-    if (startedWithAnyTime == false) {
-      return (newMin: null, newMax: null);
-    }
-    double proposedWidth = startWidth / details.horizontalScale;
-    double proposedMaxValue = focalTime + proposedWidth * t;
-  
-    showTimeMax = proposedMaxValue;
-    showTimeWidth = proposedWidth;
-    double? showTimeMin = proposedMaxValue - proposedWidth;
 
-    if (proposedMaxValue > maxTime) {
-      showTimeMax = null;
-    }
+  void startZoom(double localX, double chartWidth) {
+    t = localX / chartWidth; // 0 → left, 1 → right
+    // print("t: $t");
+    double width = showTimeMax - showTimeMin;
 
-    if (showTimeMin < minTime) {
-      showTimeMin = null;
-      showTimeWidth = null;
-    }
+    focalTime = showTimeMin + width * t;
 
-    print("min: $showTimeMin");
-    print("max: $showTimeMax");
-    print("width: $showTimeWidth");
-
-    print("focalx: $focalTime");
-
-    // return ( newMin: 0, newMax:  1);
-    return ( newMin: showTimeMin, newMax:  showTimeMax);
   }
+  
+  void updateZoom(double distance) {
+    if (hasAnyTime) {
+      double width = showTimeMax - showTimeMin;
+
+      double scaleFactor = -distance;
+      double proposedWidth = width *  pow(2, scaleFactor);
+      // print("scale factor: $scaleFactor");
+      // print("width: $proposedWidth");
+      double proposedMaxValue = focalTime + proposedWidth * t;
     
+      showTimeMax = proposedMaxValue;
+      showTimeMin = proposedMaxValue - proposedWidth;
+
+      pinnedToMax = false;
+      pinnedToMin = false;
+
+
+      if (showTimeMax > maxTime) {
+        showTimeMax = maxTime;
+        showTimeMin = showTimeMax - proposedWidth;
+        pinnedToMax = true;
+        if (showTimeMin < minTime) {
+          showTimeMin = minTime;
+          pinnedToMin = true;
+        }
+      }
+      else if (showTimeMin < minTime) {
+        showTimeMin = minTime;
+        showTimeMax = showTimeMin + proposedWidth;
+        pinnedToMin = true;
+        if (showTimeMax > maxTime) {
+          showTimeMax = maxTime;
+          pinnedToMax = true;
+        }
+      }
+
+      onShowTimeChanged(( newMin: showTimeMin, newMax:  showTimeMax));
+      assert(showTimeMin < showTimeMax);
+      // return ( newMin: 0, newMax:  1);
+    }
+  }
+
+
+  void updatePan(double distance) {
+    // print("update pan: $distance");
+    if (hasAnyTime) {
+      double width = showTimeMax - showTimeMin;
+      double proposedMove = distance * width;
+      double proposedMin = showTimeMin - proposedMove;
+      double proposedMax = showTimeMax - proposedMove;
+
+      if (proposedMax > maxTime) {
+        showTimeMax = maxTime;
+        showTimeMin = maxTime - width;
+        pinnedToMax = true;
+      } else if (proposedMin < minTime) {
+        showTimeMax = minTime + width;
+        showTimeMin = minTime;
+        pinnedToMin = true;
+      } else {
+        showTimeMax = proposedMax;
+        showTimeMin = proposedMin;
+        pinnedToMax = false;
+        pinnedToMin = false;
+      }
+
+      // print("min: $showTimeMin");
+      // print("max: $showTimeMax");
+    
+      // return ( newMin: 0, newMax:  1);
+      onShowTimeChanged(( newMin: showTimeMin, newMax:  showTimeMax));
+    }
+  }  
 }
 
 
