@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::string;
 use tokio::sync::broadcast;
 use tokio::sync::watch;
 
@@ -14,16 +13,18 @@ pub struct Engine {
     key_update_rx: watch::Receiver<()>,         // Recieve if new keys are available
 
     data_update_tx: broadcast::Sender<String>,  // Send if new data is available and the key of the data that was updated
-    data_update_rx: broadcast::Receiver<String>,  // Recieve if new data is available and the key of the data that was updated
+    // data_update_rx: broadcast::Receiver<String>,  // Recieve if new data is available and the key of the data that was updated
 
     name: String,
 }
 
 impl Engine {
     pub fn new () -> Engine {
+        // Channel to nofify if keys change
         let (key_update_tx, key_update_rx) = watch::channel(());
 
-        let (data_update_tx, data_update_rx) = broadcast::channel(100);
+        // Channel to notify if data changes
+        let (data_update_tx, _) = broadcast::channel(100);
 
         Engine {
             time_stamped_data: HashMap::new(),
@@ -33,7 +34,6 @@ impl Engine {
             key_update_rx,
 
             data_update_tx,
-            data_update_rx,
 
             name: "New".to_string(),
         }
@@ -55,20 +55,33 @@ impl Engine {
         self.in_use = false;
     }
 
+    // Add data to the engine
     pub fn add_data_point(&mut self, key: &String, value: f64, time: f64) {
+
+        // Construct the new entry
         let new_entry = TimeStampedValue{
             time,
             value
         };
 
         match self.time_stamped_data.get_mut(key) {
+            // If the engine already has this key
             Some(series) => {
+                // Add the data
                 series.push(new_entry);
+                // Communicate that new data is available
                 let _ = self.data_update_tx.send(key.clone());
             },
+
+            // If the engine doesn't already have this key
             None => {
+                // Add the data
                 self.time_stamped_data.insert(key.clone(), vec![new_entry]);
+                
+                // Communicate that new keys are available
                 let _ = self.key_update_tx.send(());
+
+                // Communicate that new data is available
                 let _ = self.data_update_tx.send(key.clone());
 
             },
@@ -84,6 +97,7 @@ impl Engine {
         self.name.clone()
     }
 
+    // Get a series of data with the corresponding key
     pub fn get_series(&self, key: &String) -> Vec<TimeStampedValue> {
 
         match self.time_stamped_data.get(key) {
@@ -92,6 +106,7 @@ impl Engine {
         }
     }
 
+    // Get all the keys to series currently in the engine
     pub fn get_keys(&self) -> Vec<String> {
         let keys:Vec<&String> = self.time_stamped_data.keys().collect();
         let mut result = vec![];

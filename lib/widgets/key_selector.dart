@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:silvanus/src/rust/api/api.dart';
@@ -28,7 +27,7 @@ class KeySelectorState extends State<KeySelector> {
     super.initState();
 
     
-
+    // If new keys are available update the options to be selected
     _keySub = getAvailableKeys(engine: widget.engine).listen((keys){
       setState(() {
         options.addFreshKeys(keys);
@@ -65,14 +64,18 @@ class KeySelectorState extends State<KeySelector> {
     );
   }
 
+  // Colour picker menu for a series
   DropdownMenu colourPicker(SeriesRequest request) {
     return  DropdownMenu(
             dropdownMenuEntries: [
+              // Add each option in the colour pickers to the menu
               for (final option in ColorPickerOption.values) DropdownMenuEntry(value: option.color, label: option.label) ],
             onSelected: (dynamic value) {
+              // The value should always be a colour since thats what we defined
               if (value is Color) {
                 request.setColor(value);
                 setState(() {
+                  // Overwrite the series in selected and options with the new colour
                   selected.addRequest(request);
                   options.addRequest(request);
                 } ); } },
@@ -80,6 +83,7 @@ class KeySelectorState extends State<KeySelector> {
             );
   }
 
+  // Stop listening to the key subscription when destroying this object
   @override
   void dispose() {
     super.dispose();

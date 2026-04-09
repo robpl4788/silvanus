@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:silvanus/types/color_option.dart';
 
+// A group of series requested, effectively a wrapper for a map
 class SeriesGroupRequest {
   Map<String, SeriesRequest> group = {};
 
@@ -27,6 +28,7 @@ class SeriesGroupRequest {
     return group.containsKey(checkIfContainsKey);
   }
 
+  // Add a set of new requests based on the supplied keys
   void addFreshKeys(List<String> freshKeys) {
     for (final key in freshKeys) {
       if (containsKey(key) == false) {
@@ -36,6 +38,7 @@ class SeriesGroupRequest {
     }
   }
 
+  // Get all the current requests as a list, sorted alphabetically
   List<SeriesRequest> getAllRequests() {
     List<SeriesRequest> allRequests = group.values.toList();
     allRequests.sort((a, b) => a.getKey().compareTo(b.getKey()));
@@ -45,6 +48,8 @@ class SeriesGroupRequest {
   SeriesGroupRequest.empty();
 }
 
+
+// An individual series request
 class SeriesRequest {
   final String name;
   Color color = Colors.blue;
@@ -57,6 +62,7 @@ class SeriesRequest {
     return name;
   }
 
+  // Get the requested colour. If one hasn't been assigned it will get one from the color distributor
   Color getColor() {
     if (assignedColor == false) {
       setColor(ColorDistributor.distributor.getColor());

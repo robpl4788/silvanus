@@ -28,6 +28,7 @@ class SourceSelectorState extends State<SourceSelector> {
             onSelected: (dynamic value) {
               if (value is SourceOptions) {
                 Future<ArcEngine> newEngineFuture;
+                // Initialise a new engine based on the selected option
                 switch (value) {
                   case SourceOptions.random:
                     newEngineFuture =  loadTest();
@@ -46,7 +47,7 @@ class SourceSelectorState extends State<SourceSelector> {
   }
 }
 
-
+// Currently available options
 enum SourceOptions {
   random(label: "Random"),
   csv(label: "CSV"),
