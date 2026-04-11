@@ -51,10 +51,6 @@ impl Engine {
         self.in_use
     }
 
-    pub fn set_not_in_use(&mut self) {
-        self.in_use = false;
-    }
-
     // Add data to the engine
     pub fn add_data_point(&mut self, key: &String, value: f64, time: f64) {
 
@@ -116,10 +112,17 @@ impl Engine {
 
         result
     }
+
+    pub fn terminate(&mut self) {
+        self.in_use = false;
+
+    }
+
+
 }
 
 impl Drop for Engine {
     fn drop(&mut self) {
-        println!("ENGINE DROPPED");
+        println!("ENGINE DROPPED: {:?}", self.get_name());
     }
 }

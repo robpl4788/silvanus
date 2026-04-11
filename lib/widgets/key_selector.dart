@@ -38,7 +38,6 @@ class KeySelectorState extends State<KeySelector> {
 
   @override
   Widget build(BuildContext context) {
-
     return ListView(
       children: [
         for (final request in options.getAllRequests())

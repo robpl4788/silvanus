@@ -36,7 +36,6 @@ class _LineState extends State<Line> {
 
   // Update the range of displayed values, should only be called by the zoom manager
   void setTimeToShow(({double newMin, double newMax}) newTime) {
-    // print("setting: $minTimeToShow -> $maxTimeToShow");
     setState(() {
       minTimeToShow = newTime.newMin;
       maxTimeToShow = newTime.newMax;
@@ -84,6 +83,7 @@ class _LineState extends State<Line> {
     // Points to plot
     List<FlSpot> newSpots = [];
 
+    
     // Subscription to stream
     final sub = getTimestampedSeries(key: seriesRequested.getKey(), engine: widget.engine)
         .listen((pointsFromRust) {
@@ -207,8 +207,8 @@ class ZoomManager {
   ZoomManager(this.onShowTimeChanged);
   
   // Wether it's tracking the min and max as new data comes in
-  bool pinnedToMax = false;
-  bool pinnedToMin = false;
+  bool pinnedToMax = true;
+  bool pinnedToMin = true;
 
 
   // Range of values currently being shown

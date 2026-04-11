@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => 704396593;
+  int get rustContentHash => -1037052153;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -92,7 +92,11 @@ abstract class RustLibApi extends BaseApi {
 
   Future<ArcEngine> crateApiApiLoadNone();
 
+  Future<ArcEngine> crateApiApiLoadSerial({required String port});
+
   Future<ArcEngine> crateApiApiLoadTest();
+
+  Future<void> crateApiApiTerminate({required ArcEngine engine});
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_ArcEngine;
@@ -286,6 +290,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "load_none", argNames: []);
 
   @override
+  Future<ArcEngine> crateApiApiLoadSerial({required String port}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(port, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiLoadSerialConstMeta,
+        argValues: [port],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiLoadSerialConstMeta =>
+      const TaskConstMeta(debugName: "load_serial", argNames: ["port"]);
+
+  @override
   Future<ArcEngine> crateApiApiLoadTest() {
     return handler.executeNormal(
       NormalTask(
@@ -294,7 +327,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 7,
             port: port_,
           );
         },
@@ -312,6 +345,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiApiLoadTestConstMeta =>
       const TaskConstMeta(debugName: "load_test", argNames: []);
+
+  @override
+  Future<void> crateApiApiTerminate({required ArcEngine engine}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerArcRwLockEngine(
+            engine,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: null,
+        ),
+        constMeta: kCrateApiApiTerminateConstMeta,
+        argValues: [engine],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiApiTerminateConstMeta =>
+      const TaskConstMeta(debugName: "terminate", argNames: ["engine"]);
 
   RustArcIncrementStrongCountFnType
   get rust_arc_increment_strong_count_ArcEngine => wire

@@ -61,12 +61,15 @@ class _MyAppState extends State<MyApp> {
           SizedBox(
               height: 300,
               child: AnalysisTab(engine: engine,  key: ValueKey(_engine!.hashCode),
-            ),),
+            ),
+            ),
             SourceSelector(onSelectionChanged: (Future<ArcEngine> engineFuture) async { 
+              terminate(engine: engine);
+
               ArcEngine currentEngine = await engineFuture;
 
               setState(() {
-                _engine = currentEngine;
+              _engine = currentEngine;
               });
             }),
           ]

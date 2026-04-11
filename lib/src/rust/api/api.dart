@@ -7,12 +7,18 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'types.dart';
 
+Future<void> terminate({required ArcEngine engine}) =>
+    RustLib.instance.api.crateApiApiTerminate(engine: engine);
+
 Future<ArcEngine> loadCsv({required String csvPath}) =>
     RustLib.instance.api.crateApiApiLoadCsv(csvPath: csvPath);
 
 Future<ArcEngine> loadNone() => RustLib.instance.api.crateApiApiLoadNone();
 
 Future<ArcEngine> loadTest() => RustLib.instance.api.crateApiApiLoadTest();
+
+Future<ArcEngine> loadSerial({required String port}) =>
+    RustLib.instance.api.crateApiApiLoadSerial(port: port);
 
 Stream<List<String>> getAvailableKeys({required ArcEngine engine}) =>
     RustLib.instance.api.crateApiApiGetAvailableKeys(engine: engine);

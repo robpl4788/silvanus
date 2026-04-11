@@ -1,4 +1,5 @@
-use flutter_rust_bridge::frb;
+use flutter_rust_bridge::{IntoDart, IntoIntoDart, frb};
+use tokio::io::split;
 
 use crate::api::types::{TimeStampedValue};
 use crate::parser::csv_parser::parse_csv;
@@ -6,8 +7,10 @@ use crate::parser::csv_parser::parse_csv;
 use crate::engine::engine::Engine;
 
 use crate::frb_generated;
+use crate::parser::serial_parser;
 use crate::parser::test_data_generator::{add_test_data};
 
+use std::ops::Add;
 use std::thread;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
@@ -17,6 +20,12 @@ use tokio::time::timeout;
 // Api for flutter to hold it's copy of the engine
 #[flutter_rust_bridge::frb(opaque)]
 type Api = Arc<RwLock<Engine>>;
+
+#[frb]
+pub fn terminate(engine: &Api) {
+    let e = engine.clone();
+    e.write().unwrap().terminate();
+}
 
 // Get an engine with the relevant csv loaded in to it
 #[frb]
@@ -49,6 +58,21 @@ pub fn load_test() -> Api {
     engine
 }
 
+#[frb]
+pub fn load_serial(port: String) -> Api {
+    let mut engine = Engine::new();
+    engine.set_name("Serial: ".to_string() + &port);
+    let engine = Arc::new(RwLock::new(engine));
+
+
+    let engine_clone = engine.clone();
+    println!("Rust loading {:?}", port);
+    thread::spawn(move || {
+        serial_parser::add_serial_data(&engine_clone, port);
+    });
+    engine
+}
+
 // Get a stream with the currently available keys. The stream tells flutter every time rust changes the available keys
 #[frb]
 pub async fn get_available_keys (engine: &Api, available_keys_sink: frb_generated::StreamSink<Vec<String>>) {
@@ -61,11 +85,15 @@ pub async fn get_available_keys (engine: &Api, available_keys_sink: frb_generate
     available_keys_sink.add(engine.read().unwrap().get_keys());
 
     // While the engine is still in use
-    while engine.read().unwrap().in_use(){
-
+    loop {
+        {
+            if engine.read().unwrap().in_use() == false {
+                break;
+            }
+        }
         // If doesn't time out update the sunk keys, otherwise stop to check if the engine this is referencing is still in use
         if let Ok(_) =  timeout(Duration::from_secs(1), update_reciever.changed()).await {
-            available_keys_sink.add(engine.read().unwrap().get_keys());                
+            available_keys_sink.add(engine.read().unwrap().get_keys());
         };
         
 
@@ -84,7 +112,10 @@ pub async fn get_timestamped_series(engine: &Api, timestamped_series_sink: frb_g
     timestamped_series_sink.add(engine.read().unwrap().get_series(&key));
 
     // While the engine is still in use
-    while engine.read().unwrap().in_use(){
+    loop {
+        if engine.read().unwrap().in_use() == false {
+            break;
+        }
         // If doesn't time out update the sunk data, otherwise stop to check if the engine this is referencing is still in use
         if let Ok(Ok(to_update)) =  timeout(Duration::from_secs(1), update_reciever.recv()).await {
             if (to_update == key) {

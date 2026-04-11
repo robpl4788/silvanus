@@ -39,7 +39,7 @@ class _AnalysisTabState extends State<AnalysisTab> {
           ),
         ),
 
-        // Right side: graph
+      //   // Right side: graph
         Expanded(
           flex: 2,
           child: Line(
